@@ -17,4 +17,10 @@ router.put("/update/:discount_id", discountController.updateDiscount);
 //Delete discount by discount ID
 router.delete("/delete/:discount_id", discountController.deleteDiscount);
 
+//Get active discounts by organization ID
+router.get("/active/:organization_id", discountController.getActiveDiscounts);
+
+//Get inactive discounts by organization ID
+router.get("/inactive/:organization_id", discountController.getInactiveDiscounts);
+
 module.exports = router;
