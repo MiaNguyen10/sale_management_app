@@ -3,12 +3,7 @@ const sql = db.sql;
 
 const Product = {
   /**
-   * @param {int} organization_id
-   * @param {string} name
-   * @param {string} description
-   * @param {string} price
-   * @param {string} stockQuantity
-   * @returns {number} ProductID
+   * Create a new product.
    */
   create: async (organization_id, name, description, price, stockQuantity) => {
     try {
@@ -32,8 +27,7 @@ const Product = {
   },
 
   /**
-   * @param {int} organization_id
-   * @returns {object} Product records
+   * Get all products by organization ID.
    */
   getProductByOrganizationId: async (organization_id) => {
     try {
@@ -51,8 +45,54 @@ const Product = {
   },
 
   /**
-   * @param {int} product_id
-   * @returns {object} Product record
+   * Get all products by organization ID and check if there is a discount for the product.
+   */
+  getProductsWithDiscountByOrganization: async (organization_id) => {
+    try {
+      const pool = await db.poolPromise;
+      const query = `
+          SELECT 
+              p.ProductID,
+              p.OrganizationID,
+              p.Name AS ProductName,
+              p.Description AS ProductDescription,
+              p.Price AS OriginalPrice,
+              p.StockQuantity,
+              dp.DiscountID,
+              d.Name AS DiscountName,
+              d.Description AS DiscountDescription,
+              d.DiscountValue,
+              d.DiscountType,
+              CASE 
+                  WHEN d.DiscountType = 'Percentage' THEN p.Price - (p.Price * d.DiscountValue / 100)
+                  WHEN d.DiscountType = 'Fixed' THEN p.Price - d.DiscountValue
+                  ELSE p.Price
+              END AS DiscountedPrice
+          FROM 
+              Products p
+          LEFT JOIN 
+              DiscountProducts dp ON p.ProductID = dp.ProductID
+          LEFT JOIN 
+              Discounts d ON dp.DiscountID = d.DiscountID
+          WHERE 
+              p.OrganizationID = @OrganizationID
+          ORDER BY 
+              p.ProductID;
+        `;
+
+      const result = await pool
+        .request()
+        .input("OrganizationID", sql.Int, organization_id)
+        .query(query);
+
+      return result.recordset;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Get product details by product ID.
    */
   getProductDetailByProductId: async (product_id) => {
     try {
@@ -69,12 +109,7 @@ const Product = {
   },
 
   /**
-   * @param {int} product_id
-   * @param {string} name
-   * @param {string} description
-   * @param {string} price
-   * @param {string} stockQuantity
-   * @returns {object} Product record
+   * Update product details.
    */
   updateProductDetail: async (
     product_id,
@@ -106,8 +141,7 @@ const Product = {
   },
 
   /**
-   * @param {int} product_id
-   * @returns {number} Number of rows affected
+   * Delete a product by product ID.
    */
   deleteProductByProductID: async (product_id) => {
     if (!Number.isInteger(product_id)) {
@@ -128,6 +162,43 @@ const Product = {
         error
       );
       throw new Error(error.message || "Database error occurred.");
+    }
+  },
+
+  /**
+   * Decrease stock when an order is placed
+   */
+  decreaseStockOfProduct: async (product_id, quantity) => {
+    try {
+      const pool = await db.poolPromise;
+      await pool
+        .request()
+        .input("ProductID", sql.Int, product_id)
+        .input("Quantity", sql.Int, quantity).query(`
+            UPDATE Products
+            SET StockQuantity = StockQuantity - @Quantity
+            WHERE ProductID = @ProductID
+            `);
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Retrieve products with low stock levels of a given organization.
+   */
+  getProductWithLowStock: async (organization_id) => {
+    try {
+      const pool = await db.poolPromise;
+      const result = await pool
+        .request()
+        .input("OrganizationID", sql.Int, organization_id)
+        .query(
+          `SELECT * FROM Products WHERE OrganizationID = @OrganizationID AND StockQuantity < 10`
+        );
+      return result.recordset;
+    } catch (error) {
+      throw error;
     }
   },
 };

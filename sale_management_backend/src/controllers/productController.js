@@ -58,6 +58,27 @@ exports.getProductByOrganizationId = async (req, res) => {
 };
 
 /**
+ * Get all products by organization ID and check if there is a discount for the product
+ */
+exports.getProductsWithDiscount = async (req, res) => {
+  try {
+    const { organization_id } = req.params;
+    if (!organization_id) {
+      return res.status(400).json({ message: "Organization ID is required" });
+    }
+
+    const products = await Product.getProductsWithDiscountByOrganization(
+      organization_id
+    );
+
+    res.status(200).json(products);
+  } catch (error) {
+    console.log("Error:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+/**
  * Get product detail by product ID
  */
 exports.getProductDetailByProductId = async (req, res) => {
@@ -139,6 +160,47 @@ exports.deleteProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found." });
     }
     res.status(200).json({ message: "Product deleted successfully." });
+  } catch (error) {
+    console.log("Error:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+/**
+ * Decrease stock of product when an order is placed
+ */
+exports.decreaseStockOfProduct = async (req, res) => {
+  try {
+    const { product_id, quantity } = req.body;
+
+    if (!product_id || !quantity) {
+      return res
+        .status(400)
+        .json({ message: "Product ID and quantity are required" });
+    }
+
+    await Product.decreaseStockOfProduct(product_id, quantity);
+
+    res.status(200).json({ message: "Stock decreased successfully" });
+  } catch (error) {
+    console.log("Error:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+/**
+ * Get products with low stock levels from given organization
+ */
+exports.getLowStockProducts = async (req, res) => {
+  try {
+    const { organization_id } = req.params;
+    if (!organization_id) {
+      return res.status(400).json({ message: "Organization ID is required" });
+    }
+
+    const products = await Product.getProductWithLowStock(organization_id);
+
+    res.status(200).json(products);
   } catch (error) {
     console.log("Error:", error);
     res.status(500).json({ message: "Internal Server Error" });
