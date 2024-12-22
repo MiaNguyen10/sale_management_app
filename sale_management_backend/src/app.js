@@ -4,6 +4,7 @@ const authRoutes = require("./routes/authRoutes");
 const organizationRoutes = require("./routes/organizationRoutes");
 const productRoutes = require("./routes/productRoutes");
 const discountRoutes = require("./routes/discountRoutes");
+const orderRoutes = require("./routes/orderRoutes");
 const authMiddleware = require("./middlewares/authMiddleware");
 
 //middleware to parse JSON data
@@ -20,6 +21,9 @@ app.use("/api/products", productRoutes);
 
 //Discounts endpoint
 app.use("/api/discounts", discountRoutes);
+
+//Orders endpoint
+app.use("/api/orders", orderRoutes);
 
 // Example of a protected route
 /*

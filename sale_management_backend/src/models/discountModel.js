@@ -147,6 +147,23 @@ const Discount = {
     }
   },
 
+    /**
+   * Get active discount list for scope whole order
+   */
+    getActiveDiscountListForWholeOrder: async (organization_id) => {
+      try {
+        const pool = await db.poolPromise;
+        const result = await pool
+        .input("OrganizationID", sql.Int, organization_id)
+        .query(`
+          SELECT * FROM Discounts WHERE OrganizationID = @OrganizationID AND Scope = 2 AND StartDate <= GETDATE() AND EndDate >= GETDATE()
+        `);
+        return result.recordset;
+      } catch (error) {
+        throw error;
+      }
+    },
+
   /**
    * Get all discounts that are inactive.
    */
@@ -160,24 +177,6 @@ const Discount = {
           `SELECT * FROM Discounts WHERE OrganizationID = @OrganizationID AND (StartDate > GETDATE() OR EndDate < GETDATE())`
         );
       return result.recordset;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  /**
-   * Validate a discount's applicability
-   */
-  validateDiscount: async (discount_id, organization_id) => {
-    try {
-      const pool = await db.poolPromise;
-      const result = await pool
-        .request()
-        .input("DiscountID", sql.Int, discount_id)
-        .input("OrganizationID", sql.Int, organization_id).query(`
-          SELECT * FROM Discounts WHERE DiscountID = @DiscountID AND OrganizationID = @OrganizationID AND StartDate <= GETDATE() AND EndDate >= GETDATE()
-        `);
-      return result.recordset[0];
     } catch (error) {
       throw error;
     }
@@ -204,7 +203,6 @@ const Discount = {
       // Perform the bulk insert
       const request = pool.request();
       await request.bulk(table);
-      
     } catch (error) {
       console.error("Error assigning discounts to products:", error);
       throw error;

@@ -47,6 +47,7 @@ const Product = {
   /**
    * Get all products by organization ID and check if there is a discount for the product.
    */
+  /** DiscountType = 1: Percentage , DiscountType = 2: Fixed amount */
   getProductsWithDiscountByOrganization: async (organization_id) => {
     try {
       const pool = await db.poolPromise;
@@ -64,8 +65,8 @@ const Product = {
               d.DiscountValue,
               d.DiscountType,
               CASE 
-                  WHEN d.DiscountType = 'Percentage' THEN p.Price - (p.Price * d.DiscountValue / 100)
-                  WHEN d.DiscountType = 'Fixed' THEN p.Price - d.DiscountValue
+                  WHEN d.DiscountType = 1 THEN p.Price - (p.Price * d.DiscountValue / 100)
+                  WHEN d.DiscountType = 2 THEN p.Price - d.DiscountValue
                   ELSE p.Price
               END AS DiscountedPrice
           FROM 
