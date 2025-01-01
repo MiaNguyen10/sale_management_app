@@ -12,7 +12,7 @@ router.get('/list/:organization_id', orderController.getOrdersByOrganization);
 router.get('/list_by_date_range/:organization_id', orderController.getOrdersByOrganizationAndDateRange);
 
 //Get order details
-router.get('/detail/:order_id', orderController.getOrderDetails);
+router.get('/detail/:order_id', orderController.getOrderDetail);
 
 //Delete an order
 router.delete('/delete/:order_id', orderController.deleteOrder);

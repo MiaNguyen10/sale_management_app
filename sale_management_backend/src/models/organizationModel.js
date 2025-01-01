@@ -46,7 +46,7 @@ const Organization = {
       const result = await pool
         .request()
         .input("Username", sql.NVarChar(50), username).query(`
-          SELECT * FROM Organizations WHERE Username = @Username
+          Select * from Organizations where Username = @Username
         `);
       return result.recordset[0];
     } catch (err) {
@@ -102,7 +102,7 @@ const Organization = {
         .request()
         .input("OrganizationID", sql.Int, organization_id)
         .query(
-          `SELECT OrganizationID, Name, Address, PhoneNumber, Email, Username FROM Organizations WHERE OrganizationID = @OrganizationID`
+          `SELECT OrganizationID, Name, Address, PhoneNumber, Email, Username, PasswordHash FROM Organizations WHERE OrganizationID = @OrganizationID`
         );
 
       return result.recordset[0];
@@ -130,6 +130,10 @@ const Organization = {
     passwordHash
   ) => {
     try {
+      if (!Number.isInteger(organization_id)) {
+        throw new Error("Organization ID must be a valid integer");
+      }
+
       const pool = await db.poolPromise;
       await pool
         .request()
@@ -140,13 +144,19 @@ const Organization = {
         .input("Email", sql.NVarChar(100), email)
         .input("Username", sql.NVarChar(50), username)
         .input("PasswordHash", sql.NVarChar(64), passwordHash).query(`
-        UPDATE Organizations
-        SET Name = @Name, Address = @Address, PhoneNumber = @PhoneNumber, Email = @Email, Username = @Username, PasswordHash = @PasswordHash, UpdatedAt = GETDATE()
-        WHERE OrganizationID = @OrganizationID
-      `);
-      const updatedOrganization = await Organization.getOrganizationByID(organization_id);
-      return updatedOrganization;
+          UPDATE Organizations
+          SET Name = @Name, 
+              Address = @Address, 
+              PhoneNumber = @PhoneNumber, 
+              Email = @Email, 
+              Username = @Username, 
+              PasswordHash = @PasswordHash, 
+              UpdatedAt = GETDATE()
+          WHERE OrganizationID = @OrganizationID
+        `);
+      return await Organization.getOrganizationByID(organization_id);
     } catch (error) {
+      console.error("Error in updateOrganization:", error);
       throw error;
     }
   },

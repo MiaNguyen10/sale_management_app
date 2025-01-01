@@ -5,7 +5,7 @@ const Product = {
   /**
    * Create a new product.
    */
-  create: async (organization_id, name, description, price, stockQuantity) => {
+  create: async (organization_id, name, description, price, stockQuantity, category_id) => {
     try {
       const pool = await db.poolPromise;
       const result = await pool
@@ -15,9 +15,10 @@ const Product = {
         .input("Description", sql.NVarChar(500), description)
         .input("Price", sql.Decimal(18, 2), price)
         .input("StockQuantity", sql.Int, stockQuantity)
+        .input("CategoryID", sql.Int, category_id)
         .query(
-          `INSERT INTO Products (OrganizationID, Name, Description, Price, StockQuantity)
-            VALUES (@OrganizationID, @Name, @Description, @Price, @StockQuantity)
+          `INSERT INTO Products (OrganizationID, Name, Description, Price, StockQuantity, CategoryID)
+            VALUES (@OrganizationID, @Name, @Description, @Price, @StockQuantity, @CategoryID);
             SELECT SCOPE_IDENTITY() AS ProductID`
         );
       return (await result).recordset[0].ProductID;
@@ -59,6 +60,7 @@ const Product = {
               p.Description AS ProductDescription,
               p.Price AS OriginalPrice,
               p.StockQuantity,
+              c.CategoryName,
               dp.DiscountID,
               d.Name AS DiscountName,
               d.Description AS DiscountDescription,
@@ -75,6 +77,8 @@ const Product = {
               DiscountProducts dp ON p.ProductID = dp.ProductID
           LEFT JOIN 
               Discounts d ON dp.DiscountID = d.DiscountID
+          LEFT JOIN
+              Category c on p.CategoryID = c.CategoryID
           WHERE 
               p.OrganizationID = @OrganizationID
           ORDER BY 
@@ -117,7 +121,8 @@ const Product = {
     name,
     description,
     price,
-    stockQuantity
+    stockQuantity,
+    category_id
   ) => {
     try {
       const pool = await db.poolPromise;
@@ -127,9 +132,11 @@ const Product = {
         .input("Name", sql.NVarChar(100), name)
         .input("Description", sql.NVarChar(500), description)
         .input("Price", sql.Decimal(18, 2), price)
-        .input("StockQuantity", sql.Int, stockQuantity).query(`
+        .input("StockQuantity", sql.Int, stockQuantity)
+        .input("CategoryID", sql.Int, category_id)
+        .query(`
             UPDATE Products
-            SET Name = @Name, Description = @Description, Price = @Price, StockQuantity = @StockQuantity, UpdatedAt = GETDATE()
+            SET Name = @Name, Description = @Description, Price = @Price, StockQuantity = @StockQuantity, UpdatedAt = GETDATE(), categoryID = @CategoryID
             WHERE ProductID = @ProductID
             `);
       const updatedProduct = await Product.getProductDetailByProductId(

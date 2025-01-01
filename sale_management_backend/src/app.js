@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const app = express();
 const authRoutes = require("./routes/authRoutes");
 const organizationRoutes = require("./routes/organizationRoutes");
@@ -10,14 +11,17 @@ const authMiddleware = require("./middlewares/authMiddleware");
 //middleware to parse JSON data
 app.use(express.json());
 
+//middleware to enable CORS
+app.use(cors({ origin: "*", credentials: true }));
+
 //Authenticate routes
 app.use("/api/auth", authRoutes);
 
 //Organizations endpoint
-app.use("/api/organizations", organizationRoutes);
+app.use("/api/organizations", authMiddleware, organizationRoutes);
 
 //Products endpoint
-app.use("/api/products", productRoutes);
+app.use("/api/products", authMiddleware, productRoutes);
 
 //Discounts endpoint
 app.use("/api/discounts", discountRoutes);

@@ -3,8 +3,7 @@
 const Organization = require("../models/organizationModel");
 const bcrypt = require("bcrypt"); // for hashing passwords
 const jwt = require("jsonwebtoken"); // to generate a token
-
-const saltRounds = 10; //Number of salt rounds for bcrypt
+const { saltRounds } = require("../utils/Constant");
 
 /**
  * Register a new organization
@@ -82,11 +81,12 @@ exports.login = async (req, res) => {
     //generate a token
     const token = jwt.sign(
       {
-        organization_id: organization.organization_id,
-        username: organization.username,
+        organization_id: organization.OrganizationID,
+        name: organization.Name,
+        username: organization.Username,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "8h" }
     );
 
     res.status(200).json({ message: "Login successful", token });

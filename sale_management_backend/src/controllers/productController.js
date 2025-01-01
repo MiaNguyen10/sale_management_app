@@ -5,10 +5,23 @@ const Product = require("../models/productModel");
  */
 exports.createProduct = async (req, res) => {
   try {
-    const { organization_id, name, description, price, stockQuantity } =
-      req.body;
+    const {
+      organization_id,
+      name,
+      description,
+      price,
+      stockQuantity,
+      category_id,
+    } = req.body;
 
-    if (!organization_id || !name || !description || !price || !stockQuantity) {
+    if (
+      !organization_id ||
+      !name ||
+      !description ||
+      !price ||
+      !stockQuantity ||
+      !category_id
+    ) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -27,7 +40,8 @@ exports.createProduct = async (req, res) => {
       name,
       description,
       price,
-      stockQuantity
+      stockQuantity,
+      category_id
     );
     res
       .status(201)
@@ -107,9 +121,16 @@ exports.getProductDetailByProductId = async (req, res) => {
 exports.updateProductDetail = async (req, res) => {
   try {
     const { product_id } = req.params;
-    const { name, description, price, stockQuantity } = req.body;
+    const { name, description, price, stockQuantity, category_id } = req.body;
 
-    if (!product_id || !name || !description || !price || !stockQuantity) {
+    if (
+      !product_id ||
+      !name ||
+      !description ||
+      !price ||
+      !stockQuantity ||
+      !category_id
+    ) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -128,7 +149,8 @@ exports.updateProductDetail = async (req, res) => {
       name,
       description,
       price,
-      stockQuantity
+      stockQuantity,
+      category_id
     );
 
     if (!product) {
