@@ -1,1 +1,2 @@
-# sale_management_app
+# Sale management app
+Sale Management Web is a user-friendly website tailored for small stores to efficiently manage their products. It allows businesses to organize products by categories and prices, create targeted discount programs for specific items or events, and track revenue seamlessly.

@@ -36,8 +36,13 @@ export interface ProductWithDiscount {
 
 export interface Product {
   ProductID: number;
-  Name: string;
-  Description: string;
-  Price: number;
+  ProductName: string;
+  ProductDescription: string;
+  OriginalPrice: number;
   StockQuantity: number;
+  CategoryName: string;
+  DiscountName: string;
+  DiscountDescription: string;
+  DiscountedPrice: number;
+  DiscountID: number;
 }

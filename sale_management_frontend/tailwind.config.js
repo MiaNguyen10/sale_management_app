@@ -18,6 +18,10 @@ export default {
         darkGreen: "#4B5945",
         pastelGreen: "#D9DFC6",
       },
+      textColor: {
+        darkGreen: "#4B5945",
+        pastelGreen: "#D9DFC6",
+      },
     },
   },
   plugins: [],

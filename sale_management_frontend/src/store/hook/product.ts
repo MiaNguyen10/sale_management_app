@@ -17,7 +17,7 @@ export const getProductDetail = createAsyncThunk(
     "product/productDetail",
     async ({ product_id }: { product_id: number }) => {
         try {
-            const response = await axiosInstance.get(`/products/${product_id}`);
+            const response = await axiosInstance.get(`/products/detail/${product_id}`);
             return response.data;
         } catch (error) {
             console.error("Failed to fetch product detail:", error);

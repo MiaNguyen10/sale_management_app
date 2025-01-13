@@ -1,18 +1,21 @@
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import EastIcon from "@mui/icons-material/East";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import tiramisu from "../../assets/tiramisu.jpg";
 import { getProductListWithDiscount } from "../../store/hook/product";
 import { selectProductListWithDiscount } from "../../store/slices/productSlice";
 import { useAppDispatch } from "../../store/store";
 import { decodeToken } from "../../utils/jwtUtils";
+import DialogProductDetail from "../Product/DialogProductDetail";
 
 const ProductSide = () => {
   const dispatch = useAppDispatch();
   const productList = useSelector(selectProductListWithDiscount);
   const token = sessionStorage.getItem("token");
   const organization_id = decodeToken(token!)?.organization_id;
+  const [openDialog, setOpenDialog] = useState(false);
+  const [productID, setProductID] = useState("");
 
   useEffect(() => {
     try {
@@ -41,6 +44,19 @@ const ProductSide = () => {
     },
     {}
   );
+
+  // const navigateToProductDetail = (product_id: number) => {
+  //   navigate(`/product/${product_id}`);
+  // };
+
+  const openProductDetailDialog = (productID: number) => {
+    setOpenDialog(true);
+    setProductID(productID.toString());
+  };
+
+  const closeProductDetailDialog = () => {
+    setOpenDialog(false);
+  }
 
   return (
     <div className="w-2/3 pr-5">
@@ -92,7 +108,10 @@ const ProductSide = () => {
 
                   {/* Button Container - Fixed Position */}
                   <div className="flex justify-between items-center mt-auto">
-                    <button className="bg-[#D9DFC6] text-black px-3 py-1 rounded-lg flex items-center gap-1 hover:bg-[#c4d9a1] transition">
+                    <button
+                      className="bg-[#D9DFC6] text-black px-3 py-1 rounded-lg flex items-center gap-1 hover:bg-[#c4d9a1] transition"
+                      onClick={() => openProductDetailDialog(product.ProductID)}
+                    >
                       Show details
                       <EastIcon className="w-4 h-4" />
                     </button>
@@ -106,6 +125,7 @@ const ProductSide = () => {
           </div>
         </div>
       ))}
+      <DialogProductDetail open={openDialog} handleClose={closeProductDetailDialog} product_id={productID}/>
     </div>
   );
 };
