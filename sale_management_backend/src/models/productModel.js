@@ -5,7 +5,14 @@ const Product = {
   /**
    * Create a new product.
    */
-  create: async (organization_id, name, description, price, stockQuantity, category_id) => {
+  create: async (
+    organization_id,
+    name,
+    description,
+    price,
+    stockQuantity,
+    category_id
+  ) => {
     try {
       const pool = await db.poolPromise;
       const result = await pool
@@ -105,7 +112,34 @@ const Product = {
       const result = await pool
         .request()
         .input("ProductID", sql.Int, product_id).query(`
-            SELECT * FROM Products WHERE ProductID = @ProductID
+            SELECT 
+              p.ProductID,
+              p.OrganizationID,
+              p.Name AS ProductName,
+              p.Description AS ProductDescription,
+              p.Price AS OriginalPrice,
+              p.StockQuantity,
+              c.CategoryName,
+              dp.DiscountID,
+              d.Name AS DiscountName,
+              d.Description AS DiscountDescription,
+              d.DiscountValue,
+              d.DiscountType,
+              CASE 
+                  WHEN d.DiscountType = 1 THEN p.Price - (p.Price * d.DiscountValue / 100)
+                  WHEN d.DiscountType = 2 THEN p.Price - d.DiscountValue
+                  ELSE p.Price
+              END AS DiscountedPrice
+          FROM 
+              Products p
+          LEFT JOIN 
+              DiscountProducts dp ON p.ProductID = dp.ProductID
+          LEFT JOIN 
+              Discounts d ON dp.DiscountID = d.DiscountID
+          LEFT JOIN
+              Category c on p.CategoryID = c.CategoryID
+          WHERE 
+              p.ProductID = @ProductID
             `);
       return result.recordset[0];
     } catch (error) {
@@ -133,8 +167,7 @@ const Product = {
         .input("Description", sql.NVarChar(500), description)
         .input("Price", sql.Decimal(18, 2), price)
         .input("StockQuantity", sql.Int, stockQuantity)
-        .input("CategoryID", sql.Int, category_id)
-        .query(`
+        .input("CategoryID", sql.Int, category_id).query(`
             UPDATE Products
             SET Name = @Name, Description = @Description, Price = @Price, StockQuantity = @StockQuantity, UpdatedAt = GETDATE(), categoryID = @CategoryID
             WHERE ProductID = @ProductID
